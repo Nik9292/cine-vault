@@ -1,0 +1,25 @@
+@use './variables';
+@use './reset';
+
+body {
+  color: var(--color-text);
+  font-family: var(--font-family);
+  background: var(--color-background);
+}
+
+.container {
+  width: min(calc(100% - var(--container-padding) * 2), var(--container-width));
+  margin-inline: auto;
+}
+
+.app {
+  min-height: 100vh;
+  background: #16213e;
+  color: #eaeaea;
+  font-family:
+    'Inter',
+    'Nunito Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
