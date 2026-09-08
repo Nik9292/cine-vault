@@ -29,7 +29,7 @@ interface SpokenLanguage {
   name: string
 }
 
-interface CastMember {
+export interface CastMember {
   adult: boolean
   cast_id: number
   character: string
@@ -43,7 +43,8 @@ interface CastMember {
   popularity: number
   profile_path: string | null
 }
-interface Crew {
+
+export interface Crew {
   adult: boolean
   credit_id: string
   department: string
@@ -57,15 +58,28 @@ interface Crew {
   profile_path: string | null
 }
 
+interface Video {
+  id: string
+  iso_3166_1: string
+  iso_639_1: string
+  key: string
+  name: string
+  official: boolean
+  published_at: string
+  site: string
+  size: number
+  type: string
+}
+
 export interface TmdbMovieDetailsDto {
   adult: boolean
   backdrop_path: string | null
-  belongs_to_collection: BelongToCollection
+  belongs_to_collection: BelongToCollection | null
   budget: number
   genres: Genre[]
-  homepage: string
+  homepage: string | null
   id: number
-  imdb_id: string
+  imdb_id: string | null
   origin_country: string[]
   original_language: string
   original_title: string
@@ -76,10 +90,10 @@ export interface TmdbMovieDetailsDto {
   production_countries: ProductionCountry[]
   release_date: string
   revenue: number
-  runtime: number
+  runtime: number | null
   spoken_languages: SpokenLanguage[]
   status: string
-  tagline: string
+  tagline: string | null
   title: string
   video: boolean
   vote_average: number
@@ -89,4 +103,7 @@ export interface TmdbMovieDetailsDto {
     crew: Crew[]
   }
   similar: TmdbPaginatedResponse<TmdbMovieDto>
+  videos: {
+    results: Video[]
+  }
 }

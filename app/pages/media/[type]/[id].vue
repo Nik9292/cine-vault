@@ -3,12 +3,17 @@ import type { MovieDetails } from '~~/shared/types/media'
 import { getTmdbImageUrl } from '~/utils/getTmdbImageUrl'
 
 const route = useRoute()
-const routeType = route.params.type as 'movie' | 'tv'
-const id = route.params.id as string
+const routeType = route.params.type
+const id: string = route.params.id as string
+
+if (routeType !== 'movie' && routeType !== 'tv') {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Media type not found',
+  })
+}
 
 const { data } = await useLazyFetch<MovieDetails>(`/api/${routeType}/${id}`)
-
-console.log(data.value?.backdropPath)
 
 const backdropPath = computed(() => getTmdbImageUrl(data.value?.backdropPath ?? null, 'w1280'))
 </script>

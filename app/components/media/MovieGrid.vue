@@ -26,6 +26,6 @@ const { similar } = defineProps<{
   display: grid;
   grid-template-columns: repeat(auto-fill, 180px);
   justify-content: space-between;
-  gap: 16px 0;
+  gap: 16px;
 }
 </style>
