@@ -79,15 +79,28 @@ export interface Crew {
   profilePath: string | null
 }
 
+export interface Video {
+  id: string
+  iso31661: string
+  iso6391: string
+  key: string
+  name: string
+  official: boolean
+  publishedAt: string
+  site: string
+  size: number
+  type: string
+}
+
 export interface MovieDetails {
   adult: boolean
   backdropPath: string | null
   belongsToCollection: BelongToCollection | null
   budget: number
   genres: Genre[]
-  homepage: string
+  homepage: string | null
   id: number
-  imdbId: string
+  imdbId: string | null
   originCountry: string[]
   originalLanguage: string
   originalTitle: string
@@ -98,10 +111,10 @@ export interface MovieDetails {
   productionCountries: ProductionCountry[]
   releaseDate: string
   revenue: number
-  runtime: number
+  runtime: number | null
   spokenLanguages: SpokenLanguage[]
   status: string
-  tagline: string
+  tagline: string | null
   title: string
   video: boolean
   voteAverage: number
@@ -111,6 +124,9 @@ export interface MovieDetails {
     crew: Crew[]
   }
   similar: PaginatedResponse<MovieSummary>
+  videos: {
+    results: Video[]
+  }
 }
 
 export interface Tab {

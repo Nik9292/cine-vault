@@ -98,5 +98,19 @@ export function mapTmdbMovieDetails(movie: TmdbMovieDetailsDto): MovieDetails {
       totalPages: movie.similar.total_pages,
       totalResults: movie.similar.total_results,
     },
+    videos: {
+      results: movie.videos.results.map(video => ({
+        id: video.id,
+        iso31661: video.iso_3166_1,
+        iso6391: video.iso_639_1,
+        key: video.key,
+        name: video.name,
+        official: video.official,
+        publishedAt: video.published_at,
+        site: video.site,
+        size: video.size,
+        type: video.type,
+      })),
+    },
   }
 }

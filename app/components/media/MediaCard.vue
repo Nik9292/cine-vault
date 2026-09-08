@@ -20,10 +20,18 @@ const ratingClass = computed(() => {
   return 'rating--low'
 })
 const mediaTypeLabel = computed(() => (mediaType === 'movie' ? 'Фильм' : 'Сериал'))
+
+function toggleLike() {
+  console.log('toggleLike')
+}
+
+function toggleFavorite() {
+  console.log('toggleFavorite')
+}
 </script>
 
 <template>
-  <NuxtLink :to="`/media/movies/${id}`">
+  <NuxtLink :to="`/media/${mediaType}/${id}`">
     <article class="media-card">
       <div class="media-card__poster-wrapper">
         <img
@@ -43,32 +51,24 @@ const mediaTypeLabel = computed(() => (mediaType === 'movie' ? 'Фильм' : '�
               class="media-card__action"
               type="button"
               title="Нравится"
+              @click.stop.prevent="toggleLike"
             >
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="currentColor"
-              >
-                <path
-                  d="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3 9.24 3 10.91 3.81 12 5.09 13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54Z"
-                />
-              </svg>
+              <Icon
+                name="lucide:heart"
+                size="20"
+              />
             </button>
 
             <button
               class="media-card__action"
               type="button"
               title="В избранное"
+              @click.stop.prevent="toggleFavorite"
             >
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="currentColor"
-              >
-                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2Z" />
-              </svg>
+              <Icon
+                name="lucide:bookmark"
+                size="20"
+              />
             </button>
           </div>
         </div>

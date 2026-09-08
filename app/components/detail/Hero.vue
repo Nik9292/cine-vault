@@ -5,6 +5,7 @@ import ToggleButton from '~/components/ui/ToggleButton.vue'
 import MediaRating from '~/components/media/MediaRating.vue'
 import CastCard from '~/components/media/CastCard.vue'
 import MovieGrid from '~/components/media/MovieGrid.vue'
+import TrailerModal from '~/components/media/TrailerModal.vue'
 
 const { detailInfo } = defineProps<{
   detailInfo: MovieDetails
@@ -15,9 +16,17 @@ const year = computed(() => detailInfo.releaseDate?.split('-')[0])
 const countries = computed(() =>
   detailInfo.productionCountries?.map(country => country.name).join(', '),
 )
-const runtime = computed(
-  () => `${Math.floor(detailInfo.runtime / 60)}ч ${detailInfo.runtime % 60}мин`,
-)
+const runtime = computed(() => {
+  if (detailInfo.runtime === null) return null
+
+  const hours = Math.floor(detailInfo.runtime / 60)
+  const minutes = detailInfo.runtime % 60
+
+  if (!hours) return `${minutes}мин`
+  if (!minutes) return `${hours}ч`
+
+  return `${hours}ч ${minutes}мин`
+})
 const cast = computed(() => detailInfo.credits?.cast?.slice(0, 20) ?? [])
 const voteAverage = computed(() => detailInfo.voteAverage.toFixed(1))
 
@@ -50,6 +59,8 @@ function setActiveTab(key: Tab['key']): void {
 }
 
 const similar = computed(() => detailInfo.similar?.results ?? [])
+
+const videos = computed(() => detailInfo.videos?.results ?? [])
 </script>
 
 <template>
@@ -163,6 +174,12 @@ const similar = computed(() => detailInfo.similar?.results ?? [])
       </div>
     </div>
   </div>
+
+  <TrailerModal
+    :videos="videos"
+    :visible="trailerVisible"
+    @close="trailerVisible = false"
+  />
 </template>
 
 <style lang="scss" scoped>
