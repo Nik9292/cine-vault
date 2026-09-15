@@ -31,8 +31,11 @@ function toggleFavorite() {
 </script>
 
 <template>
-  <NuxtLink :to="`/media/${mediaType}/${id}`">
-    <article class="media-card">
+  <article class="media-card">
+    <NuxtLink
+      class="media-card__link"
+      :to="`/media/${mediaType}/${id}`"
+    >
       <div class="media-card__poster-wrapper">
         <img
           v-if="posterUrl"
@@ -44,34 +47,6 @@ function toggleFavorite() {
         <span :class="['media-card__rating', ratingClass]">
           {{ voteAverageFixed }}
         </span>
-
-        <div class="media-card__overlay">
-          <div class="media-card__actions">
-            <button
-              class="media-card__action"
-              type="button"
-              title="Нравится"
-              @click.stop.prevent="toggleLike"
-            >
-              <Icon
-                name="lucide:heart"
-                size="20"
-              />
-            </button>
-
-            <button
-              class="media-card__action"
-              type="button"
-              title="В избранное"
-              @click.stop.prevent="toggleFavorite"
-            >
-              <Icon
-                name="lucide:bookmark"
-                size="20"
-              />
-            </button>
-          </div>
-        </div>
       </div>
 
       <div class="media-card__content">
@@ -84,12 +59,41 @@ function toggleFavorite() {
           <span>{{ mediaTypeLabel }}</span>
         </div>
       </div>
-    </article>
-  </NuxtLink>
+    </NuxtLink>
+
+    <div class="media-card__overlay">
+      <div class="media-card__actions">
+        <button
+          class="media-card__action"
+          type="button"
+          title="Нравится"
+          @click="toggleLike"
+        >
+          <Icon
+            name="lucide:heart"
+            size="20"
+          />
+        </button>
+
+        <button
+          class="media-card__action"
+          type="button"
+          title="В избранное"
+          @click="toggleFavorite"
+        >
+          <Icon
+            name="lucide:bookmark"
+            size="20"
+          />
+        </button>
+      </div>
+    </div>
+  </article>
 </template>
 
 <style scoped lang="scss">
 .media-card {
+  position: relative;
   overflow: hidden;
   width: 180px;
   color: var(--color-text);
@@ -108,6 +112,18 @@ function toggleFavorite() {
     .media-card__overlay {
       opacity: 1;
     }
+  }
+  &:hover,
+  &:focus-within {
+    .media-card__overlay {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+  &__link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
   }
   &__poster-wrapper {
     position: relative;
@@ -143,10 +159,12 @@ function toggleFavorite() {
     }
   }
   &__overlay {
+    visibility: hidden;
+    pointer-events: none;
     position: absolute;
     inset: 0;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     padding: 18px;
     background: rgb(0 0 0 / 65%);
@@ -156,6 +174,7 @@ function toggleFavorite() {
   &__actions {
     display: flex;
     gap: 12px;
+    pointer-events: auto;
   }
   &__action {
     display: flex;

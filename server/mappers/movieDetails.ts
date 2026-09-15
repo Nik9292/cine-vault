@@ -1,5 +1,6 @@
 import type { TmdbMovieDetailsDto } from '../types/TmdbMovieDetailsDto'
 import type { MovieDetails } from '~~/shared/types/media'
+import { mapTmdbMovieToSummary } from './movie.ts'
 
 export function mapTmdbMovieDetails(movie: TmdbMovieDetailsDto): MovieDetails {
   return {
@@ -79,22 +80,7 @@ export function mapTmdbMovieDetails(movie: TmdbMovieDetailsDto): MovieDetails {
     },
     similar: {
       page: movie.similar.page,
-      results: movie.similar.results.map(similar => ({
-        adult: similar.adult,
-        backdropPath: similar.backdrop_path,
-        genreIds: similar.genre_ids,
-        id: similar.id,
-        title: similar.title,
-        originalLanguage: similar.original_language,
-        originalTitle: similar.original_title,
-        overview: similar.overview,
-        popularity: similar.popularity,
-        posterPath: similar.poster_path,
-        releaseDate: similar.release_date,
-        video: similar.video,
-        voteAverage: similar.vote_average,
-        voteCount: similar.vote_count,
-      })),
+      results: movie.similar.results.map(mapTmdbMovieToSummary),
       totalPages: movie.similar.total_pages,
       totalResults: movie.similar.total_results,
     },

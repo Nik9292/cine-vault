@@ -169,7 +169,7 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
 
         <MovieGrid
           v-else-if="activeTab === 'similar'"
-          :similar="similar.slice(0, 12)"
+          :movies="similar.slice(0, 12)"
         />
       </div>
     </div>
@@ -281,8 +281,11 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
       }
     }
     .overview {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 16px;
+      border-radius: 12px;
       font-size: 14px;
-      color: #9ca3af;
+      color: #fff;
       line-height: 1.4;
       margin: 0 0 20px;
       max-width: 700px;

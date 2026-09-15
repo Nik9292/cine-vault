@@ -10,7 +10,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix && prettier . --write",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",
@@ -24,6 +25,8 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.128",
     "prettier": "^3.9.6",
-    "sass-embedded": "^1.103.1"
+    "sass-embedded": "^1.103.1",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.11"
   }
 }

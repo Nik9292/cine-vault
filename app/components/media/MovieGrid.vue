@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { MovieSummary } from '~~/shared/types/media'
 
-const { similar } = defineProps<{
-  similar: MovieSummary[]
+const { movies } = defineProps<{
+  movies: MovieSummary[]
 }>()
 </script>
 
 <template>
   <div class="movie-grid">
     <MediaCard
-      v-for="movie in similar"
+      v-for="movie in movies"
       :id="movie.id"
       :key="movie.id"
       :title="movie.title"

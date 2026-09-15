@@ -158,7 +158,7 @@ function setActiveTab(key: CareerTabKey): void {
           </div>
 
           <div class="tab-content">
-            <MovieGrid :similar="activeCredits" />
+            <MovieGrid :movies="activeCredits" />
           </div>
         </section>
       </div>
