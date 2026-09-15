@@ -33,9 +33,7 @@ function isNavLinkActive(link: NavLink): boolean {
     return true
   }
 
-  return (
-    link.relatedPrefixes?.some(prefix => route.path.startsWith(prefix)) ?? false
-  )
+  return link.relatedPrefixes?.some(prefix => route.path.startsWith(prefix)) ?? false
 }
 
 function toggleMobileMenu() {
@@ -82,17 +80,7 @@ watch(
       </nav>
 
       <div class="app-header__actions">
-        <button
-          class="app-header__action"
-          type="button"
-          aria-label="Открыть поиск"
-          title="Поиск"
-        >
-          <Icon
-            name="lucide:search"
-            size="21"
-          />
-        </button>
+        <SearchBar />
 
         <button
           class="app-header__action app-header__profile"
@@ -377,6 +365,9 @@ watch(
       display: block;
       background: rgb(15 15 26 / 98%);
       border-top: 1px solid rgb(255 255 255 / 8%);
+    }
+    &__search {
+      width: min(220px, 42vw);
     }
   }
 }
