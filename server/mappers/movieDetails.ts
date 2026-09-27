@@ -1,9 +1,11 @@
+import { mapCredits, mapVideos } from './details'
 import type { TmdbMovieDetailsDto } from '../types/TmdbMovieDetailsDto'
 import type { MovieDetails } from '~~/shared/types/media'
 import { mapTmdbMovieToSummary } from './movie.ts'
 
 export function mapTmdbMovieDetails(movie: TmdbMovieDetailsDto): MovieDetails {
   return {
+    mediaType: 'movie',
     adult: movie.adult,
     backdropPath: movie.backdrop_path,
     belongsToCollection: movie.belongs_to_collection
@@ -49,54 +51,13 @@ export function mapTmdbMovieDetails(movie: TmdbMovieDetailsDto): MovieDetails {
     video: movie.video,
     voteAverage: movie.vote_average,
     voteCount: movie.vote_count,
-    credits: {
-      cast: movie.credits.cast.map(item => ({
-        adult: item.adult,
-        castId: item.cast_id,
-        character: item.character,
-        creditId: item.credit_id,
-        gender: item.gender,
-        id: item.id,
-        knownForDepartment: item.known_for_department,
-        name: item.name,
-        order: item.order,
-        originalName: item.original_name,
-        popularity: item.popularity,
-        profilePath: item.profile_path,
-      })),
-      crew: movie.credits.crew.map(item => ({
-        adult: item.adult,
-        creditId: item.credit_id,
-        department: item.department,
-        gender: item.gender,
-        id: item.id,
-        job: item.job,
-        knownForDepartment: item.known_for_department,
-        name: item.name,
-        originalName: item.original_name,
-        popularity: item.popularity,
-        profilePath: item.profile_path,
-      })),
-    },
+    credits: mapCredits(movie.credits),
     similar: {
       page: movie.similar.page,
       results: movie.similar.results.map(mapTmdbMovieToSummary),
       totalPages: movie.similar.total_pages,
       totalResults: movie.similar.total_results,
     },
-    videos: {
-      results: movie.videos.results.map(video => ({
-        id: video.id,
-        iso31661: video.iso_3166_1,
-        iso6391: video.iso_639_1,
-        key: video.key,
-        name: video.name,
-        official: video.official,
-        publishedAt: video.published_at,
-        site: video.site,
-        size: video.size,
-        type: video.type,
-      })),
-    },
+    videos: mapVideos(movie.videos),
   }
 }

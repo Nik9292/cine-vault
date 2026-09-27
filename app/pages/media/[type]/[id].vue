@@ -1,19 +1,18 @@
 <script lang="ts" setup>
-import type { MovieDetails } from '~~/shared/types/media'
+import type { MediaDetails } from '~~/shared/types/media'
 import { getTmdbImageUrl } from '~/utils/getTmdbImageUrl'
 
+definePageMeta({
+  validate: route =>
+    (route.params.type === 'movie' || route.params.type === 'tv')
+    && typeof route.params.id === 'string'
+    && /^[1-9]\d*$/.test(route.params.id),
+})
 const route = useRoute()
-const routeType = route.params.type
-const id: string = route.params.id as string
-
-if (routeType !== 'movie' && routeType !== 'tv') {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'Media type not found',
-  })
-}
-
-const { data } = await useLazyFetch<MovieDetails>(`/api/${routeType}/${id}`)
+const { data, status, error, refresh } = await useLazyFetch<MediaDetails>(
+  () => `/api/${route.params.type}/${route.params.id}`,
+)
+useSeoMeta({ title: () => (data.value ? `${data.value.title} — CineVault` : 'CineVault') })
 
 const backdropPath = computed(() => getTmdbImageUrl(data.value?.backdropPath ?? null, 'w1280'))
 </script>
@@ -22,14 +21,33 @@ const backdropPath = computed(() => getTmdbImageUrl(data.value?.backdropPath ?? 
   <div class="media-details">
     <div
       class="backdrop"
-      :style="{ backgroundImage: `url(${backdropPath})` }"
+      :style="{ backgroundImage: backdropPath ? `url(${backdropPath})` : undefined }"
     />
     <div class="overlay" />
     <div class="container">
+      <p v-if="status === 'pending'">Загрузка...</p>
+      <div
+        v-else-if="error"
+        role="alert"
+      >
+        <p>
+          {{
+            error.statusCode === 404 ? 'Фильм или сериал не найден' : 'Не удалось загрузить данные'
+          }}
+        </p>
+        <button
+          type="button"
+          @click="refresh()"
+        >
+          Попробовать снова
+        </button>
+      </div>
       <DetailHero
-        v-if="data"
+        v-else-if="data"
+        :key="`${data.mediaType}-${data.id}`"
         :detail-info="data"
       />
+      <p v-else>Нет данных</p>
     </div>
   </div>
 </template>

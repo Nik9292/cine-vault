@@ -4,6 +4,7 @@ import type { MovieSummary } from '~~/shared/types/media'
 
 export function mapTmdbMovieToSummary(movie: TmdbMovieDto): MovieSummary {
   return {
+    mediaType: 'movie',
     adult: movie.adult,
     backdropPath: movie.backdrop_path,
     genreIds: movie.genre_ids,

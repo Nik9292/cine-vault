@@ -2,7 +2,7 @@
 import type { PersonDetails } from '~~/shared/types/person'
 import { getTmdbImageUrl } from '~/utils/getTmdbImageUrl.ts'
 import SocialLinks from '~/components/person/SocialLinks.vue'
-import MovieGrid from '~/components/media/MovieGrid.vue'
+import MediaGrid from '~/components/media/MediaGrid.vue'
 
 const route = useRoute()
 
@@ -73,6 +73,19 @@ const tabs = computed<CareerTab[]>(
         count: writingCredits.value.length,
       },
     ].filter(tab => tab.count > 0) as CareerTab[],
+)
+
+watch(
+  tabs,
+  (availableTabs) => {
+    const hasActiveTab = availableTabs.some(tab => tab.key === activeTab.value)
+    const firstTab = availableTabs[0]
+
+    if (!hasActiveTab && firstTab) {
+      activeTab.value = firstTab.key
+    }
+  },
+  { immediate: true },
 )
 
 const activeCredits = computed(() => {
@@ -158,7 +171,7 @@ function setActiveTab(key: CareerTabKey): void {
           </div>
 
           <div class="tab-content">
-            <MovieGrid :movies="activeCredits" />
+            <MediaGrid :items="activeCredits" />
           </div>
         </section>
       </div>

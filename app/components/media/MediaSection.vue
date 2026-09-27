@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
-import type { MovieSummary } from '~~/shared/types/media'
+import type { MediaSummary } from '~~/shared/types/media'
 
 const { title, items, status, error } = defineProps<{
   title: string
-  items: MovieSummary[]
+  items: MediaSummary[]
   status: 'idle' | 'pending' | 'success' | 'error'
-  error?: NuxtError
+  error?: NuxtError | null
 }>()
 </script>
 
@@ -21,7 +21,7 @@ const { title, items, status, error } = defineProps<{
     />
   </div>
 
-  <p v-else-if="error">Не удалось загрузить фильмы</p>
+  <p v-else-if="error">Не удалось загрузить подборку</p>
 
   <section
     v-else
@@ -33,12 +33,12 @@ const { title, items, status, error } = defineProps<{
       <MediaCard
         v-for="movie in items"
         :id="movie.id"
-        :key="movie.id"
+        :key="`${movie.mediaType}-${movie.id}`"
         :title="movie.title"
         :poster-path="movie.posterPath"
         :vote-average="movie.voteAverage"
         :release-date="movie.releaseDate"
-        media-type="movie"
+        :media-type="movie.mediaType"
       />
     </MediaRail>
   </section>

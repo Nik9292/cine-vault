@@ -1,31 +1,46 @@
 <script lang="ts" setup>
-import type { MovieDetails, Tab } from '~~/shared/types/media'
+import type { MediaDetails, Tab } from '~~/shared/types/media'
 import { getTmdbImageUrl } from '~/utils/getTmdbImageUrl.ts'
 import ToggleButton from '~/components/ui/ToggleButton.vue'
 import MediaRating from '~/components/media/MediaRating.vue'
 import CastCard from '~/components/media/CastCard.vue'
-import MovieGrid from '~/components/media/MovieGrid.vue'
+import MediaGrid from '~/components/media/MediaGrid.vue'
 import TrailerModal from '~/components/media/TrailerModal.vue'
 
 const { detailInfo } = defineProps<{
-  detailInfo: MovieDetails
+  detailInfo: MediaDetails
 }>()
 
 const posterPath = computed(() => getTmdbImageUrl(detailInfo.posterPath ?? null, 'w500'))
-const year = computed(() => detailInfo.releaseDate?.split('-')[0])
+const year = computed(() => {
+  if (detailInfo.mediaType === 'movie') return detailInfo.releaseDate?.split('-')[0]
+  const first = detailInfo.firstAirDate.split('-')[0]
+  const last = detailInfo.lastAirDate?.split('-')[0]
+  const ended = detailInfo.status === 'Ended' || detailInfo.status === 'Canceled'
+  if (!first) return null
+  return ended ? (last && last !== first ? `${first}–${last}` : first) : `${first} — н. в.`
+})
 const countries = computed(() =>
-  detailInfo.productionCountries?.map(country => country.name).join(', '),
+  detailInfo.productionCountries.map(country => country.name).join(', '),
 )
 const runtime = computed(() => {
-  if (detailInfo.runtime === null) return null
-
+  if (detailInfo.mediaType !== 'movie' || !detailInfo.runtime) return null
   const hours = Math.floor(detailInfo.runtime / 60)
   const minutes = detailInfo.runtime % 60
-
-  if (!hours) return `${minutes}мин`
-  if (!minutes) return `${hours}ч`
-
-  return `${hours}ч ${minutes}мин`
+  if (!hours) return `${minutes} мин`
+  if (!minutes) return `${hours} ч`
+  return `${hours} ч ${minutes} мин`
+})
+const statusLabel = computed(() => {
+  const labels: Record<string, string> = {
+    'Returning Series': 'Продолжается',
+    'Ended': 'Завершён',
+    'Canceled': 'Отменён',
+    'In Production': 'В производстве',
+    'Planned': 'Запланирован',
+    'Pilot': 'Пилот',
+  }
+  return labels[detailInfo.status] ?? detailInfo.status
 })
 const cast = computed(() => detailInfo.credits?.cast?.slice(0, 20) ?? [])
 const voteAverage = computed(() => detailInfo.voteAverage.toFixed(1))
@@ -69,7 +84,7 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
       <img
         v-if="posterPath"
         :src="posterPath"
-        alt="Poster"
+        :alt="detailInfo.title"
         class="hero__poster"
       />
 
@@ -88,9 +103,15 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
           </div>
         </div>
         <div class="meta">
+          <span>{{ detailInfo.mediaType === 'tv' ? 'Сериал' : 'Фильм' }}</span>
           <span v-if="year">{{ year }}</span>
           <span v-if="countries">{{ countries }}</span>
           <span v-if="runtime">{{ runtime }}</span>
+          <template v-if="detailInfo.mediaType === 'tv'">
+            <span>{{ statusLabel }}</span>
+            <span>Сезонов: {{ detailInfo.numberOfSeasons }}</span>
+            <span>Эпизодов: {{ detailInfo.numberOfEpisodes }}</span>
+          </template>
         </div>
         <div class="genres">
           <button
@@ -156,7 +177,7 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
 
       <div class="tabContent">
         <MediaRail
-          v-if="activeTab === 'cast'"
+          v-if="activeTab === 'cast' && cast.length"
           :item-width="130"
           :gap="8"
         >
@@ -167,10 +188,13 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
           />
         </MediaRail>
 
-        <MovieGrid
-          v-else-if="activeTab === 'similar'"
-          :movies="similar.slice(0, 12)"
+        <p v-else-if="activeTab === 'cast'">Нет информации об актёрах</p>
+
+        <MediaGrid
+          v-else-if="activeTab === 'similar' && similar.length"
+          :items="similar.slice(0, 12)"
         />
+        <p v-else>Похожие произведения не найдены</p>
       </div>
     </div>
   </div>
@@ -344,6 +368,20 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
 
   .tabContent {
     min-height: 200px;
+  }
+}
+@media (width <= 768px) {
+  .hero {
+    .content {
+      flex-direction: column;
+    }
+    &__poster {
+      width: min(100%, 300px);
+      align-self: center;
+    }
+    .bottom-content {
+      padding-inline: 0;
+    }
   }
 }
 </style>
