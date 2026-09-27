@@ -31,7 +31,7 @@ interface SpokenLanguage {
 
 export interface CastMember {
   adult: boolean
-  cast_id: number
+  cast_id?: number
   character: string
   credit_id: string
   gender: number

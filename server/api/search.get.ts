@@ -1,42 +1,39 @@
 import type { TmdbMovieDto, TmdbPaginatedResponse } from '../types/tmdb'
-import type { MovieSummary, PaginatedResponse } from '~~/shared/types/media'
+import type { TmdbTvDto } from '../types/TmdbTvDto'
 import { mapTmdbMovieToSummary } from '../mappers/movie'
-import { tmdbFetch } from '~~/server/utils/tmdbFetch'
+import { mapTmdbTvToSummary } from '../mappers/tv'
+import { mergeSearchResults } from '../utils/mergeSearchResults'
+import { tmdbFetch } from '../utils/tmdbFetch'
 
 export default defineEventHandler(async (event) => {
-  const { query } = getQuery(event)
-
-  if (typeof query !== 'string' || !query.trim()) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Search query is required',
-    })
-  }
-
-  const searchQuery = query.trim()
-
-  if (!searchQuery || searchQuery.length > 100) {
+  const { query, page: pageParam = '1' } = getQuery(event)
+  if (typeof query !== 'string' || !query.trim() || query.trim().length > 100) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Search query must contain from 1 to 100 characters',
     })
   }
-
-  const response = await tmdbFetch<TmdbPaginatedResponse<TmdbMovieDto>>(
-    event,
-    '/search/movie',
-    {
-      query: searchQuery,
-      page: 1,
-      include_adult: false,
-    })
-
-  const result: PaginatedResponse<MovieSummary> = {
-    page: response.page,
-    results: response.results.map(mapTmdbMovieToSummary),
-    totalPages: response.total_pages,
-    totalResults: response.total_results,
+  if (typeof pageParam !== 'string' || !/^[1-9]\d*$/.test(pageParam) || Number(pageParam) > 500) {
+    throw createError({ statusCode: 400, statusMessage: 'Page must be an integer from 1 to 500' })
   }
-
-  return result
+  const page = Number(pageParam)
+  const params = { query: query.trim(), page, include_adult: false }
+  const [movies, series] = await Promise.all([
+    tmdbFetch<TmdbPaginatedResponse<TmdbMovieDto>>(event, '/search/movie', params),
+    tmdbFetch<TmdbPaginatedResponse<TmdbTvDto>>(event, '/search/tv', params),
+  ])
+  return mergeSearchResults(
+    {
+      page,
+      results: movies.results.map(mapTmdbMovieToSummary),
+      totalPages: movies.total_pages,
+      totalResults: movies.total_results,
+    },
+    {
+      page,
+      results: series.results.map(mapTmdbTvToSummary),
+      totalPages: series.total_pages,
+      totalResults: series.total_results,
+    },
+  )
 })

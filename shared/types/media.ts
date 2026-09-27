@@ -1,4 +1,5 @@
-export interface MovieSummary {
+export interface MediaSummary {
+  mediaType: 'movie' | 'tv'
   adult: boolean
   backdropPath: string | null
   genreIds: number[]
@@ -10,9 +11,17 @@ export interface MovieSummary {
   popularity: number
   posterPath: string | null
   releaseDate: string
-  video: boolean
   voteAverage: number
   voteCount: number
+}
+
+export interface MovieSummary extends MediaSummary {
+  mediaType: 'movie'
+  video: boolean
+}
+
+export interface TvSummary extends MediaSummary {
+  mediaType: 'tv'
 }
 
 export interface PaginatedResponse<T> {
@@ -53,7 +62,7 @@ type SpokenLanguage = {
 
 export interface CastMember {
   adult: boolean
-  castId: number
+  castId?: number
   character: string
   creditId: string
   gender: number
@@ -92,15 +101,12 @@ export interface Video {
   type: string
 }
 
-export interface MovieDetails {
+export interface MediaDetailsBase {
   adult: boolean
   backdropPath: string | null
-  belongsToCollection: BelongToCollection | null
-  budget: number
   genres: Genre[]
   homepage: string | null
   id: number
-  imdbId: string | null
   originCountry: string[]
   originalLanguage: string
   originalTitle: string
@@ -109,25 +115,42 @@ export interface MovieDetails {
   posterPath: string | null
   productionCompanies: ProductionCompany[]
   productionCountries: ProductionCountry[]
-  releaseDate: string
-  revenue: number
-  runtime: number | null
   spokenLanguages: SpokenLanguage[]
   status: string
   tagline: string | null
   title: string
-  video: boolean
   voteAverage: number
   voteCount: number
   credits: {
     cast: CastMember[]
     crew: Crew[]
   }
-  similar: PaginatedResponse<MovieSummary>
+  similar: PaginatedResponse<MediaSummary>
   videos: {
     results: Video[]
   }
 }
+
+export interface MovieDetails extends MediaDetailsBase {
+  mediaType: 'movie'
+  belongsToCollection: BelongToCollection | null
+  budget: number
+  imdbId: string | null
+  releaseDate: string
+  revenue: number
+  runtime: number | null
+  video: boolean
+}
+
+export interface TvDetails extends MediaDetailsBase {
+  mediaType: 'tv'
+  firstAirDate: string
+  lastAirDate: string | null
+  numberOfSeasons: number
+  numberOfEpisodes: number
+}
+
+export type MediaDetails = MovieDetails | TvDetails
 
 export interface Tab {
   key: 'trailer' | 'cast' | 'similar'

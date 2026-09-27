@@ -11,6 +11,13 @@ const {
   error: nowPlayingError,
 } = await useLazyFetch('/api/movies/now-playing')
 
+const {
+  data: popularTvData,
+  status: popularTvStatus,
+  error: popularTvError,
+} = await useLazyFetch('/api/tv/popular')
+const popularSeries = computed(() => popularTvData.value?.results ?? [])
+
 const popularMovies = computed(() => popularData.value?.results ?? [])
 
 const nowPlayingMovies = computed(() => nowPlayingData.value?.results ?? [])
@@ -37,6 +44,12 @@ const heroItems = computed(() =>
         :items="nowPlayingMovies"
         :status="nowPlayingStatus"
         :error="nowPlayingError"
+      />
+      <MediaSection
+        title="Популярные сериалы"
+        :items="popularSeries"
+        :status="popularTvStatus"
+        :error="popularTvError"
       />
     </div>
   </div>

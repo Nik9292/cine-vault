@@ -1,76 +1,92 @@
 <script setup lang="ts">
-import type { MovieSummary, PaginatedResponse } from '#shared/types/media.ts'
+import type { MediaSummary, PaginatedResponse } from '#shared/types/media'
 import { getTmdbImageUrl } from '~/utils/getTmdbImageUrl'
 
+const route = useRoute()
 const searchQuery = ref('')
-const suggestions = ref<MovieSummary[]>([])
+const suggestions = ref<MediaSummary[]>([])
+const totalResults = ref(0)
 const showSuggestions = ref(false)
+const loading = ref(false)
+const searchRevision = ref(0)
 const searchRoot = ref<HTMLElement | null>(null)
 const searchError = ref<string | null>(null)
+const searchLocation = computed(() => ({ path: '/search', query: { q: searchQuery.value.trim() } }))
+let controller: AbortController | undefined
 
-async function searchMovies(query: string) {
-  try {
-    const { results } = await $fetch<PaginatedResponse<MovieSummary>>('/api/search', {
-      method: 'GET',
-      query: {
-        query,
-      },
-    })
-
-    suggestions.value = results
-    showSuggestions.value = true
-    searchError.value = null
-  }
-  catch (error) {
-    console.error('Error searching movies:', error)
-    suggestions.value = []
-    searchError.value = 'Не удалось выполнить поиск'
-    showSuggestions.value = true
-  }
+function closeDropdown() {
+  showSuggestions.value = false
+  controller?.abort()
+  loading.value = false
 }
 
-watch(searchQuery, (newValue, _oldValue, onCleanup) => {
-  const normalizedValue = newValue.trim()
+async function showAllResults() {
+  if (!searchQuery.value.trim()) return
+  closeDropdown()
+  await navigateTo(searchLocation.value)
+}
 
-  if (!normalizedValue) {
-    suggestions.value = []
-    showSuggestions.value = false
-    searchError.value = null
-    return
-  }
+watch([searchQuery, searchRevision], ([value], _oldValue, onCleanup) => {
+  const query = value.trim()
+  suggestions.value = []
+  totalResults.value = 0
+  searchError.value = null
+  showSuggestions.value = Boolean(query)
+  loading.value = Boolean(query)
+  if (!query) return
 
-  const debounceId = setTimeout(() => {
-    searchMovies(normalizedValue)
+  const request = new AbortController()
+  controller = request
+  const timer = setTimeout(async () => {
+    if (request.signal.aborted) return
+    try {
+      const response = await $fetch<PaginatedResponse<MediaSummary>>('/api/search', {
+        query: { query },
+        signal: request.signal,
+      })
+      if (request.signal.aborted) return
+      suggestions.value = response.results.slice(0, 5)
+      totalResults.value = response.totalResults
+    }
+    catch {
+      if (!request.signal.aborted) searchError.value = 'Не удалось выполнить поиск'
+    }
+    finally {
+      if (!request.signal.aborted) loading.value = false
+    }
   }, 400)
-
   onCleanup(() => {
-    clearTimeout(debounceId)
+    clearTimeout(timer)
+    request.abort()
   })
 })
 
+watch(() => route.fullPath, closeDropdown)
+
 function handleClickOutside(event: PointerEvent) {
-  const root = searchRoot.value
-  const target = event.target
-
-  if (!root || !(target instanceof Node)) return
-
-  if (!root.contains(target)) {
-    showSuggestions.value = false
+  if (
+    searchRoot.value
+    && event.target instanceof Node
+    && !searchRoot.value.contains(event.target)
+  ) {
+    closeDropdown()
   }
 }
 
-onMounted(() => {
-  document.addEventListener('pointerdown', handleClickOutside)
-})
-
+onMounted(() => document.addEventListener('pointerdown', handleClickOutside))
 onUnmounted(() => {
+  controller?.abort()
   document.removeEventListener('pointerdown', handleClickOutside)
 })
 
 function openDropdown() {
-  if (!suggestions.value.length) return
-
-  showSuggestions.value = true
+  if (!searchQuery.value.trim()) return
+  if (suggestions.value.length || searchError.value || loading.value) {
+    showSuggestions.value = true
+  }
+  else {
+    searchRevision.value++
+  }
 }
 </script>
 
@@ -82,7 +98,7 @@ function openDropdown() {
     <form
       class="wrapper__search"
       role="search"
-      @submit.prevent
+      @submit.prevent="showAllResults"
     >
       <Icon
         class="wrapper__search-icon"
@@ -94,7 +110,7 @@ function openDropdown() {
         class="wrapper__search-label"
         for="header-search"
       >
-        Поиск фильмов
+        Поиск фильмов и сериалов
       </label>
 
       <input
@@ -103,10 +119,11 @@ function openDropdown() {
         class="wrapper__search-input"
         type="search"
         name="query"
-        placeholder="Найти фильм..."
+        placeholder="Фильм или сериал..."
         autocomplete="off"
         maxlength="100"
         @focus="openDropdown"
+        @keydown.esc="closeDropdown"
       />
 
       <button
@@ -126,7 +143,14 @@ function openDropdown() {
 
     <Transition name="fade">
       <div
-        v-if="showSuggestions && searchError"
+        v-if="showSuggestions && loading"
+        class="dropdown no-results"
+      >
+        <p role="status">Поиск...</p>
+      </div>
+
+      <div
+        v-else-if="showSuggestions && searchError"
         class="dropdown no-results"
       >
         <p>{{ searchError }}</p>
@@ -138,11 +162,13 @@ function openDropdown() {
       >
         <NuxtLink
           v-for="item in suggestions.slice(0, 5)"
-          :key="item.id"
+          :key="`${item.mediaType}-${item.id}`"
           class="suggestion"
-          :to="`/media/movie/${item.id}`"
+          :to="`/media/${item.mediaType}/${item.id}`"
+          @click="closeDropdown"
         >
           <img
+            v-if="item.posterPath"
             class="poster"
             :src="getTmdbImageUrl(item.posterPath) ?? undefined"
             :alt="item.title"
@@ -150,17 +176,19 @@ function openDropdown() {
           <div class="info">
             <span class="title">{{ item.title }}</span>
             <span class="meta">
-              <span class="type">Фильм</span>
+              <span class="type">{{ item.mediaType === 'tv' ? 'Сериал' : 'Фильм' }}</span>
               <span v-if="item.releaseDate">{{ item.releaseDate.split('-')[0] }}</span>
             </span>
           </div>
         </NuxtLink>
-        <button
-          v-if="suggestions.length > 5"
+        <NuxtLink
+          v-if="totalResults > 5"
+          :to="searchLocation"
           class="showAll"
+          @click="closeDropdown"
         >
           Показать все результаты
-        </button>
+        </NuxtLink>
       </div>
 
       <div
@@ -282,7 +310,7 @@ function openDropdown() {
       align-items: center;
       justify-content: center;
       width: 100%;
-      height: 100%;
+      min-height: 48px;
       padding: 12px;
       color: #8f8fa3;
       font-size: 14px;
@@ -348,6 +376,7 @@ function openDropdown() {
       }
     }
     .showAll {
+      display: block;
       width: 100%;
       padding: 13px 12px;
       color: #e94560;
