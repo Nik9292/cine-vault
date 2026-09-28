@@ -102,7 +102,7 @@ export interface TmdbMovieDetailsDto {
     cast: CastMember[]
     crew: Crew[]
   }
-  similar: TmdbPaginatedResponse<TmdbMovieDto>
+  recommendations: TmdbPaginatedResponse<TmdbMovieDto>
   videos: {
     results: Video[]
   }

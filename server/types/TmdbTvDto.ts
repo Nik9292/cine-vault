@@ -43,5 +43,5 @@ export interface TmdbTvDetailsDto {
   number_of_episodes: number
   credits: TmdbMovieDetailsDto['credits']
   videos: TmdbMovieDetailsDto['videos']
-  similar: TmdbPaginatedResponse<TmdbTvDto>
+  recommendations: TmdbPaginatedResponse<TmdbTvDto>
 }

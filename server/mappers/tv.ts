@@ -61,11 +61,11 @@ export function mapTmdbTvDetails(tv: TmdbTvDetailsDto): TvDetails {
     numberOfEpisodes: tv.number_of_episodes,
     credits: mapCredits(tv.credits),
     videos: mapVideos(tv.videos),
-    similar: {
-      page: tv.similar.page,
-      results: tv.similar.results.map(mapTmdbTvToSummary),
-      totalPages: tv.similar.total_pages,
-      totalResults: tv.similar.total_results,
+    recommendations: {
+      page: tv.recommendations.page,
+      results: tv.recommendations.results.map(mapTmdbTvToSummary),
+      totalPages: tv.recommendations.total_pages,
+      totalResults: tv.recommendations.total_results,
     },
   }
 }

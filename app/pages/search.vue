@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { MediaSummary, PaginatedResponse } from '~~/shared/types/media'
+import Pagination from '~/components/ui/Pagination.vue'
+
 const route = useRoute()
 const query = computed(() => (typeof route.query.q === 'string' ? route.query.q.trim() : ''))
 const page = computed(() => {
@@ -7,6 +10,7 @@ const page = computed(() => {
 })
 const validQuery = computed(() => query.value.length > 0 && query.value.length <= 100)
 const validPage = computed(() => page.value >= 1 && page.value <= 500)
+const resultsRoot = ref<HTMLElement | null>(null)
 const input = ref(query.value)
 watch(query, (value) => {
   input.value = value
@@ -18,9 +22,11 @@ const { data, status, error, refresh } = await useAsyncData(
   async (_app, { signal }) => {
     if (!validQuery.value || !validPage.value)
       return { results: [], totalResults: 0, totalPages: 0, page: page.value }
-    return $fetch('/api/search', { query: { query: query.value, page: page.value }, signal })
+    return $fetch<PaginatedResponse<MediaSummary>>('/api/search', { query: { query: query.value, page: page.value }, signal })
   },
 )
+
+useResultsScroll(page, status, resultsRoot)
 
 function pageLocation(value: number) {
   return { path: '/search', query: { q: query.value, page: value } }
@@ -53,56 +59,53 @@ useSeoMeta({
         <button type="submit">Найти</button>
       </div>
     </form>
-    <p v-if="!query">Введите название фильма или сериала.</p>
-    <p v-else-if="!validQuery">Запрос должен содержать не более 100 символов.</p>
-    <p v-else-if="!validPage">
-      Некорректный номер страницы. <NuxtLink :to="pageLocation(1)">К первой странице</NuxtLink>
-    </p>
-    <p
-      v-else-if="status === 'pending'"
-      role="status"
+    <section
+      ref="resultsRoot"
+      class="search-results"
+      aria-label="Результаты поиска"
     >
-      Поиск...
-    </p>
-    <div
-      v-else-if="error"
-      role="alert"
-    >
-      <p>Не удалось загрузить результаты.</p>
-      <button
-        type="button"
-        @click="refresh()"
-      >
-        Попробовать снова
-      </button>
-    </div>
-    <template v-else-if="data">
-      <p>По запросу «{{ query }}» найдено: {{ data.totalResults }}</p>
-      <MediaGrid
-        v-if="data.results.length"
-        :items="data.results"
-      />
-      <p v-else-if="page > 1">
-        На этой странице нет результатов.
-        <NuxtLink :to="pageLocation(1)">К первой странице</NuxtLink>
+      <p v-if="!query">Введите название фильма или сериала.</p>
+      <p v-else-if="!validQuery">Запрос должен содержать не более 100 символов.</p>
+      <p v-else-if="!validPage">
+        Некорректный номер страницы. <NuxtLink :to="pageLocation(1)">К первой странице</NuxtLink>
       </p>
-      <p v-else>Ничего не найдено. Попробуйте другое название.</p>
-      <nav
-        v-if="data.totalPages > 1 && page <= data.totalPages"
-        class="pagination"
-        aria-label="Страницы поиска"
+      <p
+        v-else-if="status === 'pending'"
+        role="status"
       >
-        <NuxtLink
-          v-if="page > 1"
-          :to="pageLocation(page - 1)"
-        >Назад</NuxtLink>
-        <span aria-current="page">{{ page }} / {{ data.totalPages }}</span>
-        <NuxtLink
-          v-if="page < data.totalPages"
-          :to="pageLocation(page + 1)"
-        >Далее</NuxtLink>
-      </nav>
-    </template>
+        Поиск...
+      </p>
+      <div
+        v-else-if="error"
+        role="alert"
+      >
+        <p>Не удалось загрузить результаты.</p>
+        <button
+          type="button"
+          @click="refresh()"
+        >
+          Попробовать снова
+        </button>
+      </div>
+      <template v-else-if="data">
+        <p>По запросу «{{ query }}» найдено: {{ data.totalResults }}</p>
+        <MediaGrid
+          v-if="data.results.length"
+          :items="data.results"
+        />
+        <p v-else-if="page > 1">
+          На этой странице нет результатов.
+          <NuxtLink :to="pageLocation(1)">К первой странице</NuxtLink>
+        </p>
+        <p v-else>Ничего не найдено. Попробуйте другое название.</p>
+        <Pagination
+          v-if="page <= data.totalPages"
+          :page="page"
+          :total-pages="data.totalPages"
+          :to="pageLocation"
+        />
+      </template>
+    </section>
   </div>
 </template>
 
@@ -147,10 +150,10 @@ useSeoMeta({
     font: inherit;
   }
 }
-.pagination {
+.search-results {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   gap: 24px;
+  scroll-margin-top: 100px;
 }
 </style>

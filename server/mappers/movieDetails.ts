@@ -52,11 +52,11 @@ export function mapTmdbMovieDetails(movie: TmdbMovieDetailsDto): MovieDetails {
     voteAverage: movie.vote_average,
     voteCount: movie.vote_count,
     credits: mapCredits(movie.credits),
-    similar: {
-      page: movie.similar.page,
-      results: movie.similar.results.map(mapTmdbMovieToSummary),
-      totalPages: movie.similar.total_pages,
-      totalResults: movie.similar.total_results,
+    recommendations: {
+      page: movie.recommendations.page,
+      results: movie.recommendations.results.map(mapTmdbMovieToSummary),
+      totalPages: movie.recommendations.total_pages,
+      totalResults: movie.recommendations.total_results,
     },
     videos: mapVideos(movie.videos),
   }

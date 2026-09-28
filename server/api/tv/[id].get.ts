@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid TV ID' })
   }
   const tv = await tmdbFetch<TmdbTvDetailsDto>(event, `/tv/${id}`, {
-    append_to_response: 'credits,similar,videos',
+    append_to_response: 'credits,recommendations,videos',
     include_video_language: 'ru,en,null',
   })
   return mapTmdbTvDetails(tv)

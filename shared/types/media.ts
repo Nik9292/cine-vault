@@ -125,7 +125,7 @@ export interface MediaDetailsBase {
     cast: CastMember[]
     crew: Crew[]
   }
-  similar: PaginatedResponse<MediaSummary>
+  recommendations: PaginatedResponse<MediaSummary>
   videos: {
     results: Video[]
   }
@@ -153,6 +153,6 @@ export interface TvDetails extends MediaDetailsBase {
 export type MediaDetails = MovieDetails | TvDetails
 
 export interface Tab {
-  key: 'trailer' | 'cast' | 'similar'
+  key: 'trailer' | 'cast' | 'recommendations'
   label: string
 }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { getTmdbImageUrl } from '~/utils/getTmdbImageUrl'
 
-const { id, title, posterPath, voteAverage, releaseDate, mediaType } = defineProps<{
+const { id, title, posterPath, voteAverage, voteCount, releaseDate, mediaType } = defineProps<{
   id: number
   title: string
   posterPath: string | null
   voteAverage: number
+  voteCount?: number
   releaseDate: string
   mediaType: 'movie' | 'tv'
 }>()
@@ -58,6 +59,12 @@ function toggleFavorite() {
           <span>{{ releaseYear }}</span>
           <span>{{ mediaTypeLabel }}</span>
         </div>
+        <p
+          v-if="voteCount !== undefined"
+          class="media-card__votes"
+        >
+          Оценок: {{ voteCount.toLocaleString('ru-RU') }}
+        </p>
       </div>
     </NuxtLink>
 
@@ -209,6 +216,11 @@ function toggleFavorite() {
     line-height: 1.35;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  &__votes {
+    margin: 8px 0 0;
+    color: var(--color-text-muted);
+    font-size: 12px;
   }
   &__meta {
     display: flex;

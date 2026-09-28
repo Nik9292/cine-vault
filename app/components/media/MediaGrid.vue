@@ -15,6 +15,7 @@ const { items } = defineProps<{
       :title="item.title"
       :poster-path="item.posterPath"
       :vote-average="item.voteAverage"
+      :vote-count="item.voteCount"
       :release-date="item.releaseDate"
       :media-type="item.mediaType"
     />
@@ -22,10 +23,9 @@ const { items } = defineProps<{
 </template>
 
 <style scoped lang="scss">
+@use '~/assets/styles/media-grid' as grid;
+
 .media-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 180px);
-  justify-content: space-between;
-  gap: 16px;
+  @include grid.media-grid;
 }
 </style>

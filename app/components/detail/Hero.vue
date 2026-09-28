@@ -62,7 +62,7 @@ const trailerVisible = ref(false)
 const tabs: Tab[] = [
   { key: 'trailer', label: 'Трейлер' },
   { key: 'cast', label: 'Актёры' },
-  { key: 'similar', label: 'Похожие' },
+  { key: 'recommendations', label: 'Похожие' },
 ]
 function setActiveTab(key: Tab['key']): void {
   if (key === 'trailer') {
@@ -73,7 +73,7 @@ function setActiveTab(key: Tab['key']): void {
   activeTab.value = key
 }
 
-const similar = computed(() => detailInfo.similar?.results ?? [])
+const recommendations = computed(() => detailInfo.recommendations?.results ?? [])
 
 const videos = computed(() => detailInfo.videos?.results ?? [])
 </script>
@@ -191,8 +191,8 @@ const videos = computed(() => detailInfo.videos?.results ?? [])
         <p v-else-if="activeTab === 'cast'">Нет информации об актёрах</p>
 
         <MediaGrid
-          v-else-if="activeTab === 'similar' && similar.length"
-          :items="similar.slice(0, 12)"
+          v-else-if="activeTab === 'recommendations' && recommendations.length"
+          :items="recommendations.slice(0, 12)"
         />
         <p v-else>Похожие произведения не найдены</p>
       </div>

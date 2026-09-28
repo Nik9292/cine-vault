@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid movie ID' })
   }
   const movie = await tmdbFetch<TmdbMovieDetailsDto>(event, `/movie/${id}`, {
-    append_to_response: 'credits,similar,videos',
+    append_to_response: 'credits,recommendations,videos',
     include_video_language: 'ru,en,null',
   })
 
